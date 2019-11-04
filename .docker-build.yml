@@ -19,5 +19,3 @@ variables:
 
     - IMAGE_TAG=p$CI_PIPELINE_ID docker-compose build $SERVICE_TO_BUILD
     - IMAGE_TAG=p$CI_PIPELINE_ID docker-compose push $SERVICE_TO_BUILD
-  tags:
-    - docker
