@@ -1,0 +1,23 @@
+variables:
+  IMAGE_HUB: "${CI_REGISTRY}/"
+  IMAGE_NAME: "${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}"
+  IMAGE_TAG: "${CI_COMMIT_SHA}"
+  SERVICE_TO_BUILD: image
+
+.docker-build:
+  before_script:
+    - docker --version
+    - docker-compose -v
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker-compose build --pull $SERVICE_TO_BUILD
+    - docker-compose push $SERVICE_TO_BUILD
+
+    - REF_SLUG_FOR_DOCKER_TAG=$(if [[ "$CI_COMMIT_REF_SLUG" == "master" ]]; then echo "latest"; else echo "$CI_COMMIT_REF_SLUG"; fi)
+    - IMAGE_TAG=$REF_SLUG_FOR_DOCKER_TAG docker-compose build $SERVICE_TO_BUILD
+    - IMAGE_TAG=$REF_SLUG_FOR_DOCKER_TAG docker-compose push $SERVICE_TO_BUILD
+
+    - IMAGE_TAG=p$CI_PIPELINE_ID docker-compose build $SERVICE_TO_BUILD
+    - IMAGE_TAG=p$CI_PIPELINE_ID docker-compose push $SERVICE_TO_BUILD
+  tags:
+    - docker
